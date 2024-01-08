@@ -17,3 +17,23 @@ function printy(v,verbosity)
         print(v)
     end
 end
+
+function insideBox(x, y, box)
+    if x>=box.x and x<= box.x+box.w then
+        if y>=box.y and y<= box.y+box.h then
+            return true
+        end
+    end
+    return false
+end
+
+function mysplit (inputstr, sep)
+    if sep == nil then
+            sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+            table.insert(t, str)
+    end
+    return t
+end

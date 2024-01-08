@@ -44,12 +44,26 @@ end
 
 
 
+camBounds = {x=0, y=0, w=0, h=0}
 function playdate.update()
     playerThing:update()
     
     --sprite:moveTo(playerThing.pos.x,playerThing.pos.y)
     mgrEffects.update()
+    mgrLevels.update()
+    gfx.pushContext()
+
+
+    local toOffset = {x = -playerThing.pos.x +200, y = -playerThing.pos.y + 120}
+
+    toOffset.x = clamp(toOffset.x, -camBounds.w+400, camBounds.x  )
+    toOffset.y = clamp(toOffset.y, -camBounds.h+240 , -camBounds.y)
+    
+    gfx.setDrawOffset(toOffset.x , toOffset.y)
     gfx.sprite.update()
+
+    gfx.popContext()
+
     playdate.timer.updateTimers()
     playdate.frameTimer.updateTimers()
     playdate.drawFPS()

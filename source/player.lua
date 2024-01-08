@@ -30,7 +30,7 @@ local DIR_LIST = {
 	{x=-0,	y=-1,	frame=2,	flip=true},
 }
 
-local boundingBox = {loX =0, loY=0, hiX =440, hiY=260}
+local boundingBox = {loX =0, loY=0, hiX =4400, hiY=2600}
 
 function player:new (o)
 	--this "function" creates a new object and needs to be initialized
@@ -141,9 +141,9 @@ function player:update()
 		local distTo = (velVec:normalized() - playdate.geometry.vector2D.new(v.x, v.y):normalized()):magnitude()
 		if (smallestDist > distTo) then
 			if(v.flip) then
-				self.sprite:setImage(myImages.playerSheet:getImage(v.frame), "flipX"  )
+				self.sprite:setImage(myImages.playerSheet:getImage(v.frame + ((math.floor(self.frame/3) % 3)*5) ), "flipX"  )
 			else
-				self.sprite:setImage(myImages.playerSheet:getImage(v.frame)  )
+				self.sprite:setImage(myImages.playerSheet:getImage(v.frame + ((math.floor(self.frame/53) % 3)*5 ))  )
 			end
 			
 			smallestDist = distTo;
