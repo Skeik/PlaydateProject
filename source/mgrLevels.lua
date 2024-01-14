@@ -1,7 +1,9 @@
 mgrLevels = {}
 mgrLevels.levelTilemapSprites = {}
 mgrLevels.levelTilemapExits = {}
+mgrLevels.levelTilemapHitbox = nil
 mgrLevels.loadTo = 'default'
+mgrLevels.curLevel = nil
 local TILEMAP_ZINDEX_START = -1000
 local TILEMAP_ZINDEX_ITERATOR = 10
 local gfx <const> = playdate.graphics
@@ -16,16 +18,25 @@ end
 
 
 
+function mgrLevels.colTestLevel(loc)
+   
+    if   mgrLevels.curLevel ~= nil and mgrLevels.levelTilemapHitbox  ~= nil then
+        local intX = math.floor(loc.x/mgrLevels.curLevel.tilewidth)
+        local intY = math.floor(loc.y/mgrLevels.curLevel.tilewidth)
+        local tileMapPos =  (intY * mgrLevels.curLevel.width)+intX
+        return mgrLevels.levelTilemapHitbox.data[tileMapPos]
+    end
+    
+end
+
+
 function mgrLevels.update()
     if mgrLevels.levelTilemapExits['objects']  ~= nil  then
         for k,v in pairs(mgrLevels.levelTilemapExits['objects']) do
 
             local box = {x=v.x, w=v.width, y=v.y, h=v.height}
-            print(box)
             if insideBox(playerThing.pos.x, playerThing.pos.y, box) then
-                print("INSIDE EXIT BOX")
                 local t = mysplit(v.name, "-")
-                printTable(t);
                 local nextLevel = t[1]
                 mgrLevels.loadTo = t[2]
                 mgrLevels.loadLevel(levels[nextLevel])
@@ -45,7 +56,7 @@ function mgrLevels.renderLevelTilemaps(layersTable)
         v:remove();
     end
     mgrLevels.levelTilemapSprites = {}
-    
+    mgrLevels.levelTilemapHitbox = nil
     local layersAdded = 0;
     for k,v in pairs(layersTable) do
         if string.find(v.name, 'render') then
@@ -76,14 +87,20 @@ function mgrLevels.renderLevelTilemaps(layersTable)
         if string.find(v.name, 'exit') then
             mgrLevels.levelTilemapExits = v;
         end        
+        if string.find(v.name, 'hitbox') then
+            mgrLevels.levelTilemapHitbox = v;
+        end    
+        
     end  
 
     
 end
 function mgrLevels.loadLevel(levelTable)
+    mgrLevels.curLevel = nil
     camBounds.w = levelTable.tilewidth * levelTable.width
     camBounds.h = levelTable.tileheight * levelTable.height
     mgrLevels.renderLevelTilemaps(levelTable.layers)
+    mgrLevels.curLevel = levelTable
     
 end 
 
