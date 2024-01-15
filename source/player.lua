@@ -26,6 +26,7 @@ player.buttonLastPressedFrames = 0;
 player.dashTime = 0
 
 player.dashVec = playdate.geometry.vector2D.new(0,0)
+player.boundingBox = playdate.geometry.rect.new(0, 0, 34, 21)
 
 local DIR_LIST = {
 	{x=0,	y=1,	frame=5,	flip=false,	     handFrame = 8},
@@ -187,26 +188,7 @@ function player:update()
 		self.velocity.x = 0.0;
 		self.velocity.y = 0.0;
 	end
-	print(mgrLevels.colTestLevel(self.pos))
-
-	if self.pos.x >= boundingBox.hiX or self.pos.x <= boundingBox.loX  then
-		self.velocity.x = 0 * self.velocity.x
-		while self.pos.x >= boundingBox.hiX do
-			self.pos.x = self.pos.x - 1			
-		end
-		while self.pos.x <= boundingBox.loX  do
-			self.pos.x = self.pos.x + 1			
-		end
-	end
-	if self.pos.y >= boundingBox.hiY or self.pos.y <= boundingBox.loY  then
-		self.velocity.y = 0 *self.velocity.y
-		while self.pos.y >= boundingBox.hiY do
-			self.pos.y = self.pos.y - 1			
-		end
-		while self.pos.y <= boundingBox.loY  do
-			self.pos.y = self.pos.y + 1			
-		end
-	end
+	keepOutOfWalls(self)
 
 	self.sprite:moveTo( self.pos.x, self.pos.y )
 

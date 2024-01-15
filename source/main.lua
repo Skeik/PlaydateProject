@@ -75,7 +75,7 @@ function playdate.update()
     end
     
     gfx.sprite.update()
-
+    playdate.graphics.drawCircleAtPoint(playerThing.pos.x, playerThing.pos.y, 5)
     gfx.popContext()
 
     playdate.timer.updateTimers()
@@ -85,7 +85,7 @@ end
 
 
 function playdate.debugDraw()
-    playdate.graphics.drawCircleAtPoint(playerThing.pos.x, playerThing.pos.y, 5)
+    
 end
 
 
