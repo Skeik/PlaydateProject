@@ -8,7 +8,7 @@ local TILEMAP_ZINDEX_START = -1000
 local TILEMAP_ZINDEX_ITERATOR = 10
 local gfx <const> = playdate.graphics
 
-
+mgrLevels.enemyBlobs = {}
 
 
 
@@ -21,8 +21,8 @@ end
 function mgrLevels.colTestLevel(loc)
    
     if   mgrLevels.curLevel ~= nil and mgrLevels.levelTilemapHitbox  ~= nil then
-        local intX = math.floor(loc.x/mgrLevels.curLevel.tilewidth)
-        local intY = math.floor(loc.y/mgrLevels.curLevel.tilewidth)
+        local intX = 1+ math.floor(loc.x/mgrLevels.curLevel.tilewidth)
+        local intY = math.floor(loc.y/mgrLevels.curLevel.tileheight)
         local tileMapPos =  (intY * mgrLevels.curLevel.width)+intX
         return mgrLevels.levelTilemapHitbox.data[tileMapPos]
     end
@@ -43,6 +43,12 @@ function mgrLevels.update()
             end
         end
     end
+    -- Update all enemy blobs
+    for _, enemyBlob in ipairs(mgrLevels.enemyBlobs) do
+        if enemyBlob and enemyBlob.update then
+            enemyBlob:update()
+        end
+    end
 end
 
 
@@ -50,7 +56,7 @@ end
     --all the layers in order. 
 function mgrLevels.renderLevelTilemaps(layersTable)
     mgrLevels.levelTilemapExits = {}
-
+    mgrLevels.enemyBlobs = {}
 
     for k,v in pairs(mgrLevels.levelTilemapSprites) do
         v:remove();
@@ -81,6 +87,18 @@ function mgrLevels.renderLevelTilemaps(layersTable)
                     playerThing.pos.x = vv.x
                     playerThing.pos.y = vv.y
                 end  
+            end
+        end
+
+        if string.find(v.name, 'enemyBlobs') then
+            for kk,vv in pairs(v.objects) do
+                local newEnemyBlob = enemyBlob:new();
+                newEnemyBlob.pos.x = vv.x
+                newEnemyBlob.pos.y = vv.y
+                newEnemyBlob.sprite:setZIndex(PLAYER_ZINDEX - 1)
+                mgrLevels.enemyBlobs[#mgrLevels.enemyBlobs + 1] = newEnemyBlob;
+                
+                print("putting enemy blob at " , vv.x, vv.y)
             end
         end
 

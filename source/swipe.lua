@@ -4,13 +4,13 @@ swipe = {}
 -- NOTE: Because it's local, you'll have to do it in every .lua source file.
 local gfx <const> = playdate.graphics
 
-swipe.MAX_FRAMES = 3;
+swipe.MAX_FRAMES = 5;
 
 swipe.pos = {x=100, y=100}
 swipe.sprite = {}
 swipe.frame = 1;
 swipe.lifetime = 0;
-swipe.DURATION = 4
+swipe.DURATION = 9
 swipe.dead = false
 
 function swipe:new (o)

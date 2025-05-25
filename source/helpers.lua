@@ -44,34 +44,60 @@ function keepOutOfWalls(whoToKeepOut)
 
 	--wall collision logic
 	local bbox = {}               
-	local pushLeft = {}             
-	local pushRight = {}           
-    local pushUp = {}                
-	local pushDown = {}
-    local f = function ()
-        bbox = whoToKeepOut.boundingBox:offsetBy(whoToKeepOut.pos.x, whoToKeepOut.pos.y)
-        pushLeft = {playdate.geometry.vector2D.new(bbox.x+bbox.width, bbox.y), playdate.geometry.vector2D.new(bbox.x+bbox.width, bbox.y+bbox.height)}
-        pushRight = {playdate.geometry.vector2D.new(bbox.x, bbox.y), playdate.geometry.vector2D.new(bbox.x, bbox.y+bbox.height)}
-        pushUp = {playdate.geometry.vector2D.new(bbox.x, bbox.y+bbox.height), playdate.geometry.vector2D.new(bbox.x+bbox.width, bbox.y+bbox.height)}
-        pushDown = {playdate.geometry.vector2D.new(bbox.x, bbox.y), playdate.geometry.vector2D.new(bbox.x+bbox.width, bbox.y)}
-    end
-    f()
-    for k,v in pairs(pushLeft) do
-        while mgrLevels.colTestLevel(v) do
+
+
+
+    bbox = whoToKeepOut.boundingBox:offsetBy(whoToKeepOut.pos.x, whoToKeepOut.pos.y)
+
+    local pLeft = function (vec)
+        while (mgrLevels.colTestLevel(vec) or 0 )~= 0 do
             whoToKeepOut.velocity.x = 0
             whoToKeepOut.pos.x = whoToKeepOut.pos.x - 1
-            v.x = v.x-1
-            print(v)
-            
-        end
-        f()
+            vec.x = vec.x-1          
+        end        
+        bbox = whoToKeepOut.boundingBox:offsetBy(whoToKeepOut.pos.x, whoToKeepOut.pos.y)
     end
-    for k,v in pairs(pushRight) do
-        while mgrLevels.colTestLevel(v) do
+    local pRight = function (vec)
+        while (mgrLevels.colTestLevel(vec) or 0 )~= 0 do
             whoToKeepOut.velocity.x = 0
             whoToKeepOut.pos.x = whoToKeepOut.pos.x + 1
-            v.x = v.x+1
-        end
-        f()
+            vec.x = vec.x + 1          
+        end        
+        bbox = whoToKeepOut.boundingBox:offsetBy(whoToKeepOut.pos.x, whoToKeepOut.pos.y)
     end
+
+    local pUp = function (vec)
+        while (mgrLevels.colTestLevel(vec) or 0 )~= 0 do
+            whoToKeepOut.velocity.y = 0
+            whoToKeepOut.pos.y = whoToKeepOut.pos.y - 1
+            vec.y = vec.y-1          
+        end        
+        bbox = whoToKeepOut.boundingBox:offsetBy(whoToKeepOut.pos.x, whoToKeepOut.pos.y)
+    end
+    local pDown = function (vec)
+        while (mgrLevels.colTestLevel(vec) or 0 )~= 0 do
+            whoToKeepOut.velocity.y = 0
+            whoToKeepOut.pos.y = whoToKeepOut.pos.y + 1
+            vec.y = vec.y + 1          
+        end        
+        bbox = whoToKeepOut.boundingBox:offsetBy(whoToKeepOut.pos.x, whoToKeepOut.pos.y)
+    end
+
+
+    local cornerOffset = 10
+
+    pLeft(playdate.geometry.vector2D.new(bbox.x+bbox.width,     bbox.y+cornerOffset))
+    pLeft(playdate.geometry.vector2D.new(bbox.x+bbox.width,     bbox.y+bbox.height - cornerOffset))
+
+    
+    pRight(playdate.geometry.vector2D.new(bbox.x,               bbox.y + cornerOffset))
+    pRight(playdate.geometry.vector2D.new(bbox.x,               bbox.y+bbox.height-cornerOffset))
+
+    pUp(playdate.geometry.vector2D.new(bbox.x+cornerOffset,                  bbox.y+bbox.height))
+    pUp(playdate.geometry.vector2D.new(bbox.x+bbox.width-cornerOffset,       bbox.y+bbox.height))
+
+    pDown(playdate.geometry.vector2D.new(bbox.x+cornerOffset,                bbox.y))
+    pDown(playdate.geometry.vector2D.new(bbox.x+bbox.width-cornerOffset,     bbox.y))
+    playdate.graphics.drawRect(bbox)
+
 end

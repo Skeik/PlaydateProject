@@ -1,5 +1,6 @@
 VERBOSE = false;
-PLAYER_ZINDEX = 10
+PLAYER_ZINDEX = 500
+SHADOWS_ZINDEX = -10
 shakeFramesSoft = 0
 
 --Playdate Imports
@@ -10,13 +11,13 @@ import "CoreLibs/sprites"
 import "CoreLibs/timer"
 import "CoreLibs/animation"
 import "CoreLibs/frameTimer"
-
+import "CoreLibs/easing"
 import 'res/sound/pulp-audio'
 
 
 import "helpers"
 import "Signal"
-
+import "sequence"
 
 SIGNALS = Signal()
 
@@ -29,10 +30,12 @@ import "loadImages"
 import "loadLevels"
 
 import "swipe" --swordSwipes
-import "player" --generic physics "thing"
+import "player" 
+import "enemyBlob"
 import "mgrEffects"
 import "mgrLevels"
 
+machine = import 'statemachine'
 
 function myGameSetUp()
 
@@ -75,7 +78,7 @@ function playdate.update()
     end
     
     gfx.sprite.update()
-    playdate.graphics.drawCircleAtPoint(playerThing.pos.x, playerThing.pos.y, 5)
+    
     gfx.popContext()
 
     playdate.timer.updateTimers()

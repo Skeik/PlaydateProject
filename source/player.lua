@@ -11,6 +11,9 @@ player.velocityIntent = playdate.geometry.vector2D.new(1.0,0.0)
 player.drag = {x=0.7, y=0.7}
 player.sprite = {}
 player.handSprite = {}
+
+player.handShadowSprite = {}
+player.shadowSprite = {}
 player.speed = 2;
 player.maxSpeed = 4;
 player.rotDeg = 0;
@@ -26,22 +29,18 @@ player.buttonLastPressedFrames = 0;
 player.dashTime = 0
 
 player.dashVec = playdate.geometry.vector2D.new(0,0)
-player.boundingBox = playdate.geometry.rect.new(0, 0, 34, 21)
+player.boundingBox = playdate.geometry.rect.new(-14, -5, 29, 21)
 
 local DIR_LIST = {
-	{x=0,	y=1,	frame=5,	flip=false,	     handFrame = 8},
-	{x=-0 ,	y=1,	frame=5,	flip=true,	     handFrame = 8},
-	{x=1,	y=1,	frame=1,	flip=true, 	 	 handFrame = 7},
-	{x=-1,	y=1,	frame=1,	flip=false, 	 handFrame = 1},
-	{x=1,	y=0,	frame=4,	flip=false, 	 handFrame = 6},
-	{x=-1,	y=0,	frame=4,	flip=true, 	 	 handFrame = 2},
-	{x=1,	y=-1,	frame=3,	flip=false, 	 handFrame = 5},
-	{x=-1,	y=-1,	frame=3,	flip=true, 		 handFrame = 3},
-	{x=0,	y=-1,	frame=2,	flip=false, 	 handFrame = 4},
-	{x=-0,	y=-1,	frame=2,	flip=true, 	 	 handFrame = 4},
+	{x=-0 ,	y=1,	frame=5,	flip="flipX",	 handFlip="flipX",    handFrame = 8},
+	{x=1,	y=1,	frame=1,	flip="flipX", 	 handFlip="flipX",	 handFrame = 1},
+	{x=-1,	y=1,	frame=1,	flip="", 	 	handFlip="flipX",	handFrame = 7},
+	{x=1,	y=0,	frame=4,	flip="", 		handFlip="",	 handFrame = 6},
+	{x=-1,	y=0,	frame=4,	flip="flipX", 	 handFlip="",	 handFrame = 2},
+	{x=1,	y=-1,	frame=3,	flip="", 	 	handFlip="flipX",	handFrame = 5},
+	{x=-1,	y=-1,	frame=3,	flip="flipX", 	handFlip="",	 handFrame = 3},
+	{x=0,	y=-1,	frame=2,	flip="", 	 	handFlip="flipX",	handFrame = 4},
 }
-
-local boundingBox = {loX =0, loY=0, hiX =4400, hiY=2600}
 
 function player:new (o)
 	--this "function" creates a new object and needs to be initialized
@@ -59,12 +58,20 @@ function player:new (o)
 	o.handSprite = gfx.sprite.new(myImages.handSheet:getImage(1));
 	o.handSprite:add()
 	o.samplePlayer = playdate.sound.sampleplayer.new("res/sound/woosh.wav")
+	
+	o.shadowSprite = gfx.sprite.new(myImages.shadows:getImage(1));
+	o.shadowSprite:add()
+
+	o.handShadowSprite = gfx.sprite.new(myImages.shadows:getImage(3));
+	o.handShadowSprite:add()
 
 	return o
 end
 
 function player:update()
-	
+
+	playdate.graphics.fillCircleAtPoint(self.pos.x, self.pos.y, 10)
+
 	self.walking = false;
 	local velAccel = playdate.geometry.vector2D.new(0,0);
 	
@@ -179,9 +186,7 @@ function player:update()
 	self.pos.x = velVecScaled.dx + self.pos.x;
 	self.pos.y = velVecScaled.dy + self.pos.y;
 
-	if self.dashTime >= 0 then
-		self.pos = self.pos + (self.dashVec * 6.5)
-	end
+	
 	self.velocity.x = velVecScaled.x * self.drag.x;
 	self.velocity.y = velVecScaled.y * self.drag.y;
 	if velVecScaled:magnitude() <= .3 then
@@ -190,6 +195,9 @@ function player:update()
 	end
 	keepOutOfWalls(self)
 
+	if self.dashTime >= 0 then
+		self.pos = self.pos + (self.dashVec * 6)
+	end
 	self.sprite:moveTo( self.pos.x, self.pos.y )
 
 	
@@ -207,15 +215,15 @@ function player:update()
 
 	if playdate.buttonJustPressed( playdate.kButtonA ) then
 		local posVec = playdate.geometry.vector2D.new(self.pos.x, self.pos.y)
-		posVec = posVec + (velVec:normalized() * 20)
+		posVec = posVec + (velVec:normalized() * 30)
 		self.velocity.y = 0;
 		self.velocity.x = 0;
 		SIGNALS:notify("swipe",_, posVec.dx, posVec.dy)
 		self.samplePlayer:play();
 		if self.timeSincePunch >= timeToHoldPunch then
 			self.timeSincePunch = 0 
-			self.punchHandPos.x = -self.velHandMemory:normalized():leftNormal():scaledBy(20).y + self.pos.x
-			self.punchHandPos.y = self.velHandMemory:normalized():leftNormal():scaledBy(20).x+ self.pos.y 
+			self.punchHandPos.x = -self.velHandMemory:normalized():leftNormal():scaledBy(30).y + self.pos.x
+			self.punchHandPos.y = self.velHandMemory:normalized():leftNormal():scaledBy(30).x+ self.pos.y 
 		end
     end
 	
@@ -232,8 +240,11 @@ function player:update()
 	else
 		self.handSprite:setZIndex(PLAYER_ZINDEX + 1)
 	end
-	
+
+
+
 	self.sprite:setZIndex(PLAYER_ZINDEX)
+	
 	local smallestDist = 9999
 
 
@@ -241,25 +252,15 @@ function player:update()
 		local distTo = (velVec:normalized() - playdate.geometry.vector2D.new(v.x, v.y):normalized()):magnitude()
 		if (smallestDist > distTo) then
 			if self.walking == true then
-				if(v.flip) then
-					self.sprite:setImage(myImages.playerSheet:getImage(v.frame + ((math.floor(self.frame/2) % 3)*5) ), "flipX"  )
-				else
-					self.sprite:setImage(myImages.playerSheet:getImage(v.frame + ((math.floor(self.frame/2) % 3)*5 ))  )
-				end
+				self.sprite:setImage(myImages.playerSheet:getImage(v.frame + ((math.floor(self.frame/2) % 3)*5) ), v.flip  )
 			elseif self.dashTime >0 then
-				if(v.flip) then
-					self.sprite:setImage(myImages.playerSheet:getImage(v.frame + 15), "flipX"  )
-				else
-					self.sprite:setImage(myImages.playerSheet:getImage(v.frame + 15))
-				end
+				self.sprite:setImage(myImages.playerSheet:getImage(v.frame + 15), v.flip  )
 			else 
-				if(v.flip) then
-					self.sprite:setImage(myImages.playerSheet:getImage(v.frame + 5), "flipX"  )
-				else
-					self.sprite:setImage(myImages.playerSheet:getImage(v.frame + 5))
-				end
+				self.sprite:setImage(myImages.playerSheet:getImage(v.frame + 5), v.flip )
 			end
-			self.handSprite:setImage(myImages.handSheet:getImage((math.floor(  (self.frame * .15) % 4) * 10 )  + v.handFrame) )
+
+
+			self.handSprite:setImage(myImages.handSheet:getImage((math.floor(  (self.frame * .15) % 4) * 10 )  + v.handFrame), v.handFlip   )
 			
 			smallestDist = distTo;
 		end
@@ -278,4 +279,19 @@ function player:update()
 	if (self.walking and self.frame % 5 == 0 ) then
 		pulp.audio.playSound('footstep')
 	end
+
+	self.shadowSprite:setZIndex(PLAYER_ZINDEX - 1)
+	self.shadowSprite:moveTo( self.pos.x, self.pos.y + 5)
+
+	self.handShadowSprite:setZIndex(PLAYER_ZINDEX - 2)
+
+	if self.timeSincePunch >= timeToHoldPunch then
+		self.handShadowSprite:setImage(myImages.shadows:getImage(3))
+		self.handShadowSprite:moveTo( self.handSprite.x ,self.handSprite.y + 8  )
+	else
+		self.handShadowSprite:setImage(myImages.shadows:getImage(1))
+		self.handShadowSprite:moveTo( self.handSprite.x ,self.handSprite.y + 5 )
+	end
+	
+
 end
